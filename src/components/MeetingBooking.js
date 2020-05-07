@@ -88,11 +88,11 @@ class Booking extends Component{
             tempName:`${firstName} ${lastName}`, 
         }
         this.setState({employee:updatedEmployee})
-        // this.handleClientLoad();
+        this.handleClientLoad();
     }
 
-   /*  handleClientLoad = () => {
-        window.gapi.load('client:auth2', initClient);
+   handleClientLoad = () => {
+        window.gapi.load('client:auth2', this.initClient);
     }
 
     initClient = () => {
@@ -100,19 +100,59 @@ class Booking extends Component{
           apiKey: apiKey,
           clientId: clientId,
           discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-          scope: "https://www.googleapis.com/auth/calendar.readonly"
+          scope: "https://www.googleapis.com/auth/calendar"
         }).then(function () {
+            console.log("success")
+            //checking for event creation static
+            //gapi.auth2.getAuthInstance().signIn();
+            var event = {
+                'summary': 'Test Event',
+                'location': 'Chandigarh',
+                'description': 'A chance to hear more about Google\'s developer products.',
+                'start': {
+                  'dateTime': '2020-05-10T09:00:00-07:00',
+                  'timeZone': 'Asia/Calcutta'
+                },
+                'end': {
+                  'dateTime': '2020-05-10T10:00:00-07:00',
+                  'timeZone': 'Asia/Calcutta'
+                },
+                'recurrence': [
+                  'RRULE:FREQ=DAILY;COUNT=2'
+                ],
+                'attendees': [
+                  {'email': 'adititrehan61@gmail.com'}
+                ],
+                'reminders': {
+                  'useDefault': false,
+                  'overrides': [
+                    {'method': 'email', 'minutes': 24 * 60},
+                    {'method': 'popup', 'minutes': 10}
+                  ]
+                }
+              };
+              
+              var request = window.gapi.client.calendar.events.insert({
+                'calendarId': 'primary',
+                'resource': event
+              });
+              
+              request.execute(function(event) {
+                console.log('Event created: ',  event);
+              });
+
           // Listen for sign-in state changes.
-          window.gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+          /* window.gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
           // Handle the initial sign-in state.
           updateSigninStatus(window.gapi.auth2.getAuthInstance().isSignedIn.get());
           authorizeButton.onclick = handleAuthClick;
-          signoutButton.onclick = handleSignoutClick;
+          signoutButton.onclick = handleSignoutClick; */
         }, function(error) {
-          appendPre(JSON.stringify(error, null, 2));
+            console.log(error, "error")
+            //appendPre(JSON.stringify(error, null, 2));
         });
-    } */
+    }
 
     onChange = (e,prop,detail) => {
         const {employee} = this.state;

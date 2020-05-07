@@ -11,6 +11,6 @@ export const timeSlots =[
     "7:00 P.M",
 ]
 
-export const clientId = '417248184044-i14u18vrdfs0t4pdh5jdmlic4ilmirmp.apps.googleusercontent.com';
+export const clientId = '417248184044-fp0pn99n9e4oa03vdbbuosddt5ulr3li.apps.googleusercontent.com';
 
-export const apiKey = 'AIzaSyAAH99boIxpg7RbgU_5lfrTfzzE35fwg3I';
+export const apiKey = 'AIzaSyA8Pws7CqW-r03044T6WpqXQUIf9XM6O8E';
