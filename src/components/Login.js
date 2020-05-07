@@ -114,7 +114,7 @@ class Login extends Component{
                         onChange = {this.handleChange}
                         value={user.email}
                         error={error}
-                        helperText={error ? "Required":""}
+                        helperText={error ? "Email is required!":""}
                     />
                     <Button
                         fullWidth
