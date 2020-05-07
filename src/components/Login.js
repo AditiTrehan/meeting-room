@@ -137,7 +137,7 @@ class Login extends Component{
                 <Typography component="h1" variant="h4">
                     Sign In
                 </Typography>
-                <form className={classes.form}>
+                <form className={classes.form} onSubmit={this.onSignIn}>
                     <TextField
                         variant="outlined"
                         margin="normal"

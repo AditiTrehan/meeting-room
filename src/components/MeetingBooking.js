@@ -165,7 +165,7 @@ class Booking extends Component{
     render(){
         const {classes} = this.props;
         const {employee={}} = this.state;
-
+        console.log(employee, "employee")
         return(
             <Fragment>
             <CssBaseline />
@@ -233,13 +233,13 @@ class Booking extends Component{
                     </div>
                     <div>
                     <Typography component="h5" noWrap  align="center">
-                        Please select your preffered slot
+                        Please select your preferred slot
                     </Typography>
                     {
                         timeSlots && timeSlots.map((slot,key)=>{
                             return(
-                                <Button variant="outlined" 
-                                        className={classes.slot} 
+                                <Button key={key} variant="outlined" 
+                                        className={`${classes.slot} ${slot === employee.slot ? 'active' : ''}`} 
                                         onClick={(e)=>this.onChange(e,"slot",slot)}
                                 >
                                     {slot}
