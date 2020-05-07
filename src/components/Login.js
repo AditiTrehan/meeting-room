@@ -12,6 +12,9 @@ from '@material-ui/core';
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import actions from '../actions';
+import { GoogleLogin } from "react-google-login";
+import {clientId} from "../constants";
+import {saveObject, validateEmail} from "../utils";
 
 const classes = (theme) => ({
     root:{
@@ -26,7 +29,7 @@ const classes = (theme) => ({
         backgroundPosition: 'center',
     },
     paper: {
-        margin: theme.spacing(8, 4),
+        margin: theme.spacing(30, 4),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -38,8 +41,8 @@ const classes = (theme) => ({
     submit: {
         margin: theme.spacing(3, 0, 2),
     },
-    button:{
-        width:"100%"
+    loginBtn:{
+        textAlign:"center"
     }
 })
 
@@ -50,7 +53,8 @@ class Login extends Component{
                 user:{
                     email:""
                 },
-                error:false
+                error:false,
+                loading:false
             }
     }
     
@@ -66,39 +70,72 @@ class Login extends Component{
         })
     }
 
+    isValid = () => {
+        const {user} = this.state;
+        let { isValid, errors } = validateEmail(user.email);
+
+        if(!isValid){
+            this.setState({ errors });
+        }
+        return isValid
+    }
+
     onSignIn = (e) => {
         e.preventDefault();
         const {user} = this.state;
-        if(user.email){
+
+        if(this.isValid()){
             actions.login(user)
             this.props.history.push('/booking')
-        }
-        else{
-            this.setState({
-                error:true
-            })
-        }
+        }   
     }
 
-    googleSignIn = (googleUser) => {
-        var profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+    onSuccess = (response) => {
+        const { profileObj } = response;
+        this.setState({
+            loading: true
+        });
+        const {
+            email,
+            familyName,
+            givenName,
+            googleId,
+            imageUrl = ""
+        } = profileObj;
+        const session = {
+            email,
+            lastName: familyName,
+            firstName: givenName,
+            provider: "google",
+            providerId: googleId,
+            imageUrl
+        };
+
+    saveObject("session", session);
+    
+    setTimeout(() => {
+        this.setState({
+            loading: false
+        });
+        this.props.history.push("/booking");
+        }, 1000);
+    }
+
+    onFailure = (error) => {
+        console.log('error')
     }
     
     render(){
         const {classes} = this.props;
-        const {user = {}, error} = this.state;
+        const {user = {}, errors={}, loading} = this.state;
         return(
             <Grid container component="main" className={classes.root}>
             <CssBaseline/>
             <Grid item xs={false} sm={4} md={7} className={classes.image} />
             <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
                 <div className={classes.paper}>
-                <Typography component="h1" variant="h5">
-                    Sign in
+                <Typography component="h1" variant="h4">
+                    Sign In
                 </Typography>
                 <form className={classes.form}>
                     <TextField
@@ -106,15 +143,11 @@ class Login extends Component{
                         margin="normal"
                         required
                         fullWidth
-                        id="email"
                         label="Email Address"
-                        name="email"
-                        autoComplete="email"
-                        autoFocus
                         onChange = {this.handleChange}
                         value={user.email}
-                        error={error}
-                        helperText={error ? "Email is required!":""}
+                        error={errors.email ? true : false}
+                        helperText={errors.email}
                     />
                     <Button
                         fullWidth
@@ -125,12 +158,19 @@ class Login extends Component{
                     >
                         Sign In
                     </Button>
-                    <Button 
-                        fullWidth
-                        className = "g-signin2" 
-                        data-onsuccess={this.googleSignIn}
-                    >
-                    </Button>
+                    <div className={classes.loginBtn}>
+                        <GoogleLogin
+                            clientId={clientId}
+                            onSuccess={this.onSuccess}
+                            onFailure={this.onFailure}
+                            icon={loading ? false : true}
+                            buttonText={
+                                loading ? "Signing In...": 
+                                "Sign In With Google"
+                            }
+                            disabled={loading}
+                        />
+                    </div>
                 </form>
                 </div>
             </Grid>
@@ -141,7 +181,6 @@ class Login extends Component{
 
 Login.propTypes = {
     classes: PropTypes.object.isRequired,
-    theme:PropTypes.object.isRequired
 }
 
 const LoginConnected = withStyles(classes)(Login);

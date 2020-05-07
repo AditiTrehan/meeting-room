@@ -7,8 +7,8 @@ let initialState = {
 export default function (state = initialState, action) {
     switch (action.type) {
         case types.AUTH_LOGIN:
-            let newUser = { ...action.payload };
-            return { ...state,user: newUser };
+            let updatedUser = { ...action.payload };
+            return { ...state,user: updatedUser };
         default:
             return state
     }

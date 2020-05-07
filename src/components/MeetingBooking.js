@@ -17,11 +17,14 @@ from '@material-ui/core';
 import { DatePicker,MuiPickersUtilsProvider } from "@material-ui/pickers";
 import PropTypes from "prop-types";
 import MomentUtils from '@date-io/moment';
-import {timeSlots} from '../constants';
+import {timeSlots, apiKey, clientId} from '../constants';
+import moment from 'moment';
+import { connect } from "react-redux";
+import {getObject, removeObject} from '../utils';
 
 const classes = (theme) => ({
-    appBar:{
-        position:'relative'
+    title:{
+        flexGrow: 1,
     },
     layout: {
         width: 'auto',
@@ -66,10 +69,50 @@ class Booking extends Component{
                 room:'',
                 description:'',
                 date:new Date(),
-                slot:''
-            }
+                slot:'',
+                email:'',
+                tempName:""
+            },
         }       
     }
+
+    componentDidMount(){
+        const userDetails = JSON.parse(getObject("session")) || {}
+        const email = (userDetails && userDetails.email) || "";
+        const firstName = (userDetails && userDetails.firstName) || "";
+        const lastName = (userDetails && userDetails.lastName) || "";
+        const {employee = {}} = this.state;
+        let updatedEmployee = {
+            ...employee,
+            email,
+            tempName:`${firstName} ${lastName}`, 
+        }
+        this.setState({employee:updatedEmployee})
+        // this.handleClientLoad();
+    }
+
+   /*  handleClientLoad = () => {
+        window.gapi.load('client:auth2', initClient);
+    }
+
+    initClient = () => {
+        window.gapi.client.init({
+          apiKey: apiKey,
+          clientId: clientId,
+          discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
+          scope: "https://www.googleapis.com/auth/calendar.readonly"
+        }).then(function () {
+          // Listen for sign-in state changes.
+          window.gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+          // Handle the initial sign-in state.
+          updateSigninStatus(window.gapi.auth2.getAuthInstance().isSignedIn.get());
+          authorizeButton.onclick = handleAuthClick;
+          signoutButton.onclick = handleSignoutClick;
+        }, function(error) {
+          appendPre(JSON.stringify(error, null, 2));
+        });
+    } */
 
     onChange = (e,prop,detail) => {
         const {employee} = this.state;
@@ -77,7 +120,7 @@ class Booking extends Component{
         if(prop === "date"){
             let updatedEmployee = {
                 ...employee,
-                [prop]:e
+                [prop]:moment(e).format()
             }
             this.setState({
                 employee:updatedEmployee
@@ -109,17 +152,29 @@ class Booking extends Component{
         console.log(employee , "employee")
     }
 
+    logOut = () => {
+        removeObject("session")
+        setTimeout(() => {
+            this.setState({
+                loading: false
+            });
+            this.props.history.push("/");
+        }, 500);
+    }
+
     render(){
         const {classes} = this.props;
         const {employee={}} = this.state;
+
         return(
             <Fragment>
             <CssBaseline />
-            <AppBar position="absolute" color="default" className={classes.appBar}>
+            <AppBar position="static" color="default">
                 <Toolbar>
-                <Typography variant="h6" color="inherit" noWrap>
-                    Meeting Room
-                </Typography>
+                    <Typography variant="h6" color="inherit" className={classes.title}>
+                        {employee.tempName !== " " ? employee.tempName : (employee && employee.email) }
+                    </Typography>
+                    <Button color="inherit" onClick={this.logOut}>Logout</Button>
                 </Toolbar>
             </AppBar>
             <main className={classes.layout}>
@@ -149,7 +204,6 @@ class Booking extends Component{
                         variant="outlined"
                         margin="normal"
                         label="Name"
-                        autoFocus
                         fullWidth
                         onChange = {(e)=>this.onChange(e,"name")}
                         value={employee.name}
@@ -166,31 +220,36 @@ class Booking extends Component{
                     <div className={classes.datePicker}>
                         <MuiPickersUtilsProvider utils={MomentUtils} >
                             <DatePicker
-                            autoOk
-                            orientation="landscape"
-                            variant="static"
-                            openTo="date"
-                            value={employee.date}
-                            onChange={(e) => this.onChange(e,"date")}
-                            fullWidth
-                            
+                                autoOk
+                                orientation="landscape"
+                                variant="static"
+                                openTo="date"
+                                value={employee.date}
+                                onChange={(e) => this.onChange(e,"date")}
+                                fullWidth
+                                disablePast
                             />
                         </MuiPickersUtilsProvider>
                     </div>
+                    <div>
                     <Typography component="h5" noWrap  align="center">
                         Please select your preffered slot
                     </Typography>
                     {
                         timeSlots && timeSlots.map((slot,key)=>{
                             return(
-                                <Button variant="outlined" className={classes.slot} onClick={(e)=>this.onChange(e,"slot",slot)}>
+                                <Button variant="outlined" 
+                                        className={classes.slot} 
+                                        onClick={(e)=>this.onChange(e,"slot",slot)}
+                                >
                                     {slot}
                                 </Button>
                             )
-                           
                         })
                     }
+                    </div>
                      <Button
+                        fullWidth
                         variant="contained"
                         color="primary"
                         onClick={this.createBooking}
@@ -199,7 +258,6 @@ class Booking extends Component{
                         Book Appointment
                     </Button>
                 </Paper>
-                
             </main>
         </Fragment>
         )
@@ -211,6 +269,12 @@ Booking.propTypes = {
     theme:PropTypes.object.isRequired
 }
 
-const MeetingBooking = withStyles(classes)(Booking);
+const BookingConnected = withStyles(classes)(Booking);
+const mapStateToProps = state => {
+    return {
+        user: state.user
+    };
+};
+const MeetingBooking = connect(mapStateToProps)(BookingConnected)
 
 export default MeetingBooking;
