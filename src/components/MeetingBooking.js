@@ -238,9 +238,10 @@ class Booking extends Component{
                     {
                         timeSlots && timeSlots.map((slot,key)=>{
                             return(
-                                <Button key={key} variant="outlined" 
-                                        className={`${classes.slot} ${slot === employee.slot ? 'active' : ''}`} 
+                                <Button key={key} variant={`${slot === employee.slot ? 'contained' : 'outlined'}`} 
+                                        className={classes.slot} 
                                         onClick={(e)=>this.onChange(e,"slot",slot)}
+                                        color={`${slot === employee.slot ? 'primary' : ''}`}
                                 >
                                     {slot}
                                 </Button>
