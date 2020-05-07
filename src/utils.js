@@ -21,6 +21,13 @@ export const removeObject = (key) => {
   }
 }
 
+export const isLoggedIn = () => {
+  let session = JSON.parse(getObject("session"));
+  let hasAccess = session && session.email;
+
+  return hasAccess;
+}
+
 export const validateEmail = (email) => {
   let errors = {}
   if(Validator.empty(email)) {
