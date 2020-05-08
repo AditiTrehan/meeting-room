@@ -148,16 +148,14 @@ class Booking extends Component{
     createBooking = (e) => {
         const { employee={} } = this.state;
         const { date="", slot="", name="", room="", description="" } = employee;
-        const startDateTime = moment(moment(date).format('MM/DD/YYYY') + slot, 'MM/DD/YYYY hh:mm A').format();
+        const startDateTime = moment(moment(date).format('MM/DD/YYYY') + " " +  slot, 'MM/DD/YYYY hh:mm A').format();
         
         let endTimeSlot = slot.split(":");
         endTimeSlot[0] = parseInt(endTimeSlot[0] || 10) + 1;
         endTimeSlot = endTimeSlot.join(":");
 
-        const endDateTime = moment(moment(date).format('MM/DD/YYYY') + endTimeSlot, 'MM/DD/YYYY hh:mm A').format();
-
-        console.log(startDateTime, endDateTime, "times")
-
+        const endDateTime = moment(moment(date).format('MM/DD/YYYY') + " " + endTimeSlot, 'MM/DD/YYYY hh:mm A').format();
+        
         var event = {
             'summary': name,
             'location': room,

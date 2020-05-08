@@ -53,41 +53,8 @@ class Login extends Component{
                 user:{
                     email:""
                 },
-                error:false,
                 loading:false
             }
-    }
-    
-    handleChange = (e) => {
-        const {value} = e.target;
-        const {user} = this.state;
-        let updatedUser = {
-            ...user,
-            email:value
-        }
-        this.setState({
-            user:updatedUser
-        })
-    }
-
-    isValid = () => {
-        const {user} = this.state;
-        let { isValid, errors } = validateEmail(user.email);
-
-        if(!isValid){
-            this.setState({ errors });
-        }
-        return isValid
-    }
-
-    onSignIn = (e) => {
-        e.preventDefault();
-        const {user} = this.state;
-
-        if(this.isValid()){
-            actions.login(user)
-            this.props.history.push('/booking')
-        }   
     }
 
     onSuccess = (response) => {
@@ -127,7 +94,7 @@ class Login extends Component{
     
     render(){
         const {classes} = this.props;
-        const {user = {}, errors={}, loading} = this.state;
+        const {loading} = this.state;
         return(
             <Grid container component="main" className={classes.root}>
             <CssBaseline/>
@@ -137,27 +104,7 @@ class Login extends Component{
                 <Typography component="h1" variant="h4">
                     Sign In
                 </Typography>
-                <form className={classes.form} onSubmit={this.onSignIn}>
-                    <TextField
-                        variant="outlined"
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Email Address"
-                        onChange = {this.handleChange}
-                        value={user.email}
-                        error={errors.email ? true : false}
-                        helperText={errors.email}
-                    />
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                        onClick={this.onSignIn}
-                    >
-                        Sign In
-                    </Button>
+                <form className={classes.form}>
                     <div className={classes.loginBtn}>
                         <GoogleLogin
                             clientId={clientId}
