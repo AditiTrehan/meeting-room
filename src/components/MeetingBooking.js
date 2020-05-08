@@ -11,7 +11,8 @@ import {
     InputLabel,
     MenuItem,
     TextField,
-    Button
+    Button,
+    CircularProgress
 }
 from '@material-ui/core';
 import { DatePicker,MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -74,6 +75,8 @@ class Booking extends Component{
                 email:'',
                 tempName:""
             },
+            creatingBooking: false,
+            message: ''
         }       
     }
 
@@ -147,7 +150,9 @@ class Booking extends Component{
     }
 
     createBooking = (e) => {
-        const { employee={},open=false } = this.state;
+        const { employee={},open=false  } = this.state;
+        this.toggleCreateBookingLoading();
+
         const { date="", slot="", name="", room="", description="" } = employee;
         const startDateTime = moment(moment(date).format('MM/DD/YYYY') + " " +  slot, 'MM/DD/YYYY hh:mm A').format();
         
@@ -170,7 +175,7 @@ class Booking extends Component{
               'timeZone': 'Asia/Calcutta'
             },
             'attendees': [
-              {'email': 'shashwatgoyal05@gmail.com'}
+              {'email': 'adititrehan61@gmail.com'}
             ],
             'reminders': {
               'useDefault': false,
@@ -178,7 +183,8 @@ class Booking extends Component{
                 {'method': 'email', 'minutes': 24 * 60},
                 {'method': 'popup', 'minutes': 10}
               ]
-            }
+            },
+            sendNotifications: true
         };
           
         var request = window.gapi.client.calendar.events.insert({
@@ -186,16 +192,30 @@ class Booking extends Component{
             'resource': event
         });
           
-        request.execute(function(event) {
-           return <SnackBar open={open} message={"Event created successfully"} handleClose={this.onCloseSnackBar}/>
+        request.execute((event) => {
+            let message = "Event Created Successfully";
+            this.toggleCreateBookingLoading();
+            if(event.error) {
+                message = event.message;
+            }
+            this.openSnackBar(message);
+            console.log(event, "event");
             // console.log('Event created: ',  event);
         });
     }
 
-    onCloseSnackBar = () => {
-        this.setState({
-            open:false
-        })
+    openSnackBar = (message) => {
+        this.setState((prevState) => ({
+            open: !prevState.open,
+            message
+        }));
+    }
+
+    closeSnackBar = () => {
+        this.setState((prevState) => ({
+            open: !prevState.open,
+            message: ''
+        }));
     }
 
     logOut = () => {
@@ -208,9 +228,15 @@ class Booking extends Component{
         }, 500);
     }
 
+    toggleCreateBookingLoading = () => {
+        this.setState((prevState) => ({
+            creatingBooking: !prevState.creatingBooking
+        }))
+    }
+
     render(){
-        const {classes} = this.props;
-        const {employee={}} = this.state;
+        const { classes } = this.props;
+        const { employee={}, creatingBooking=false, open=false, message='' } = this.state;
         return(
             <Fragment>
             <CssBaseline />
@@ -301,10 +327,11 @@ class Booking extends Component{
                         onClick={this.createBooking}
                         className={classes.bookButton}
                     >
-                        Book Appointment
+                        {creatingBooking ? <CircularProgress color="#FFF" /> : 'Book Appointment'}
                     </Button>
                 </Paper>
             </main>
+            <SnackBar open={open} message={message} handleClose={this.closeSnackBar}/>
         </Fragment>
         )
     }
