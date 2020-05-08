@@ -146,7 +146,7 @@ class Booking extends Component{
     }
 
     createBooking = (e) => {
-        const { employee={},open=false  } = this.state;
+        const { employee={} } = this.state;
         this.toggleCreateBookingLoading();
 
         const { date="", slot="", name="", room="", description="" } = employee;

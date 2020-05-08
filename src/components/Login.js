@@ -4,17 +4,14 @@ import {
     Typography,
     Grid,
     Paper,
-    TextField,
-    Button,
     withStyles
 } 
 from '@material-ui/core';
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import actions from '../actions';
 import { GoogleLogin } from "react-google-login";
 import {clientId} from "../constants";
-import {saveObject, validateEmail} from "../utils";
+import {saveObject} from "../utils";
 
 const classes = (theme) => ({
     root:{
