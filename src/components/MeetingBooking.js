@@ -73,10 +73,10 @@ class Booking extends Component{
                 date:new Date(),
                 slot:'',
                 email:'',
-                tempName:""
             },
             creatingBooking: false,
-            message: ''
+            message: '',
+            tempName:""
         }       
     }
 
@@ -89,9 +89,8 @@ class Booking extends Component{
         let updatedEmployee = {
             ...employee,
             email,
-            tempName:`${firstName} ${lastName}`, 
         }
-        this.setState({employee:updatedEmployee});
+        this.setState({employee:updatedEmployee,tempName:`${firstName} ${lastName}`});
         this.handleClientLoad();
         
     }
@@ -107,12 +106,9 @@ class Booking extends Component{
           discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
           scope: "https://www.googleapis.com/auth/calendar"
         }).then(function () {
-            console.log("success")
-            //checking for event creation static
-            //gapi.auth2.getAuthInstance().signIn();
-
+            // console.log("success")
         }, function(error) {
-            console.log(error, "error")
+            // console.log(error, "error")
         });
     }
 
@@ -198,8 +194,12 @@ class Booking extends Component{
             if(event.error) {
                 message = event.message;
             }
+            else {
+                this.setState({
+                    employee:{}
+                })
+            }
             this.openSnackBar(message);
-            console.log(event, "event");
             // console.log('Event created: ',  event);
         });
     }
@@ -236,14 +236,14 @@ class Booking extends Component{
 
     render(){
         const { classes } = this.props;
-        const { employee={}, creatingBooking=false, open=false, message='' } = this.state;
+        const { employee={}, creatingBooking=false, open=false, message='', tempName } = this.state;
         return(
             <Fragment>
             <CssBaseline />
             <AppBar position="static" color="default">
                 <Toolbar>
                     <Typography variant="h6" color="inherit" className={classes.title}>
-                        {employee.tempName !== " " ? employee.tempName : (employee && employee.email) }
+                        {tempName !== " " ? tempName : (employee && employee.email) }
                     </Typography>
                     <Button color="inherit" onClick={this.logOut}>Logout</Button>
                 </Toolbar>
@@ -277,7 +277,7 @@ class Booking extends Component{
                         label="Name"
                         fullWidth
                         onChange = {(e)=>this.onChange(e,"name")}
-                        value={employee.name}
+                        value={employee.name || ''}
                     />
                     <TextField
                         label="Meeting Description"
@@ -285,7 +285,7 @@ class Booking extends Component{
                         rows={4}
                         variant="outlined"
                         fullWidth
-                        value={employee.description}
+                        value={employee.description || ''}
                         onChange={(e)=>this.onChange(e,"description")}
                     />
                     <div className={classes.datePicker}>
