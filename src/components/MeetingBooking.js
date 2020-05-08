@@ -11,7 +11,8 @@ import {
     InputLabel,
     MenuItem,
     TextField,
-    Button
+    Button,
+    CircularProgress
 }
 from '@material-ui/core';
 import { DatePicker,MuiPickersUtilsProvider } from "@material-ui/pickers";
@@ -73,6 +74,7 @@ class Booking extends Component{
                 email:'',
                 tempName:""
             },
+            creatingBooking: false
         }       
     }
 
@@ -147,6 +149,8 @@ class Booking extends Component{
 
     createBooking = (e) => {
         const { employee={} } = this.state;
+        this.toggleCreateBookingLoading();
+
         const { date="", slot="", name="", room="", description="" } = employee;
         const startDateTime = moment(moment(date).format('MM/DD/YYYY') + " " +  slot, 'MM/DD/YYYY hh:mm A').format();
         
@@ -169,7 +173,7 @@ class Booking extends Component{
               'timeZone': 'Asia/Calcutta'
             },
             'attendees': [
-              {'email': 'shashwatgoyal05@gmail.com'}
+              {'email': 'adititrehan61@gmail.com'}
             ],
             'reminders': {
               'useDefault': false,
@@ -177,7 +181,8 @@ class Booking extends Component{
                 {'method': 'email', 'minutes': 24 * 60},
                 {'method': 'popup', 'minutes': 10}
               ]
-            }
+            },
+            sendNotifications: true
         };
           
         var request = window.gapi.client.calendar.events.insert({
@@ -185,7 +190,8 @@ class Booking extends Component{
             'resource': event
         });
           
-        request.execute(function(event) {
+        request.execute((event) => {
+            this.toggleCreateBookingLoading();
             console.log('Event created: ',  event);
         });
         //this.handleClientLoad(employee);
@@ -201,9 +207,15 @@ class Booking extends Component{
         }, 500);
     }
 
+    toggleCreateBookingLoading = () => {
+        this.setState((prevState) => ({
+            creatingBooking: !prevState.creatingBooking
+        }))
+    }
+
     render(){
         const {classes} = this.props;
-        const {employee={}} = this.state;
+        const { employee={}, creatingBooking=false } = this.state;
         return(
             <Fragment>
             <CssBaseline />
@@ -294,7 +306,7 @@ class Booking extends Component{
                         onClick={this.createBooking}
                         className={classes.bookButton}
                     >
-                        Book Appointment
+                        {creatingBooking ? <CircularProgress color="#FFF" /> : 'Book Appointment'}
                     </Button>
                 </Paper>
             </main>
