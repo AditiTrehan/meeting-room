@@ -87,8 +87,9 @@ class Booking extends Component{
             email,
             tempName:`${firstName} ${lastName}`, 
         }
-        this.setState({employee:updatedEmployee})
+        this.setState({employee:updatedEmployee});
         this.handleClientLoad();
+        
     }
 
    handleClientLoad = () => {
@@ -105,52 +106,9 @@ class Booking extends Component{
             console.log("success")
             //checking for event creation static
             //gapi.auth2.getAuthInstance().signIn();
-            var event = {
-                'summary': 'Test Event',
-                'location': 'Chandigarh',
-                'description': 'A chance to hear more about Google\'s developer products.',
-                'start': {
-                  'dateTime': '2020-05-10T09:00:00-07:00',
-                  'timeZone': 'Asia/Calcutta'
-                },
-                'end': {
-                  'dateTime': '2020-05-10T10:00:00-07:00',
-                  'timeZone': 'Asia/Calcutta'
-                },
-                'recurrence': [
-                  'RRULE:FREQ=DAILY;COUNT=2'
-                ],
-                'attendees': [
-                  {'email': 'adititrehan61@gmail.com'}
-                ],
-                'reminders': {
-                  'useDefault': false,
-                  'overrides': [
-                    {'method': 'email', 'minutes': 24 * 60},
-                    {'method': 'popup', 'minutes': 10}
-                  ]
-                }
-              };
-              
-              var request = window.gapi.client.calendar.events.insert({
-                'calendarId': 'primary',
-                'resource': event
-              });
-              
-              request.execute(function(event) {
-                console.log('Event created: ',  event);
-              });
 
-          // Listen for sign-in state changes.
-          /* window.gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-          // Handle the initial sign-in state.
-          updateSigninStatus(window.gapi.auth2.getAuthInstance().isSignedIn.get());
-          authorizeButton.onclick = handleAuthClick;
-          signoutButton.onclick = handleSignoutClick; */
         }, function(error) {
             console.log(error, "error")
-            //appendPre(JSON.stringify(error, null, 2));
         });
     }
 
@@ -188,8 +146,51 @@ class Booking extends Component{
     }
 
     createBooking = (e) => {
-        const {employee} = this.state;
-        console.log(employee , "employee")
+        const { employee={} } = this.state;
+        const { date="", slot="" } = employee;
+        const startDateTime = moment(moment(date).format('MM/DD/YYYY') + slot, 'MM/DD/YYYY hh:mm A').format();
+        
+        let endTimeSlot = slot.split(":");
+        endTimeSlot[0] = parseInt(endTimeSlot[0] || 10) + 1;
+        endTimeSlot = endTimeSlot.join(":");
+
+        const endDateTime = moment(moment(date).format('MM/DD/YYYY') + endTimeSlot, 'MM/DD/YYYY hh:mm A').format();
+
+        console.log(startDateTime, endDateTime, "times")
+
+        var event = {
+            'summary': `${employee.name}`,
+            'location': `${employee.room}`,
+            'description': `${employee.description}`,
+            'start': {
+              'dateTime': startDateTime,
+              'timeZone': 'Asia/Calcutta'
+            },
+            'end': {
+              'dateTime': endDateTime,
+              'timeZone': 'Asia/Calcutta'
+            },
+            'attendees': [
+              {'email': 'shashwatgoyal05@gmail.com'}
+            ],
+            'reminders': {
+              'useDefault': false,
+              'overrides': [
+                {'method': 'email', 'minutes': 24 * 60},
+                {'method': 'popup', 'minutes': 10}
+              ]
+            }
+        };
+          
+        var request = window.gapi.client.calendar.events.insert({
+            'calendarId': 'primary',
+            'resource': event
+        });
+          
+        request.execute(function(event) {
+            console.log('Event created: ',  event);
+        });
+        //this.handleClientLoad(employee);
     }
 
     logOut = () => {
@@ -306,8 +307,7 @@ class Booking extends Component{
 }
 
 Booking.propTypes = {
-    classes: PropTypes.object.isRequired,
-    theme:PropTypes.object.isRequired
+    classes: PropTypes.object.isRequired
 }
 
 const BookingConnected = withStyles(classes)(Booking);
