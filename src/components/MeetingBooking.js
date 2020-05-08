@@ -147,7 +147,7 @@ class Booking extends Component{
 
     createBooking = (e) => {
         const { employee={} } = this.state;
-        const { date="", slot="" } = employee;
+        const { date="", slot="", name="", room="", description="" } = employee;
         const startDateTime = moment(moment(date).format('MM/DD/YYYY') + slot, 'MM/DD/YYYY hh:mm A').format();
         
         let endTimeSlot = slot.split(":");
@@ -159,9 +159,9 @@ class Booking extends Component{
         console.log(startDateTime, endDateTime, "times")
 
         var event = {
-            'summary': `${employee.name}`,
-            'location': `${employee.room}`,
-            'description': `${employee.description}`,
+            'summary': name,
+            'location': room,
+            'description': description,
             'start': {
               'dateTime': startDateTime,
               'timeZone': 'Asia/Calcutta'
@@ -206,7 +206,6 @@ class Booking extends Component{
     render(){
         const {classes} = this.props;
         const {employee={}} = this.state;
-        console.log(employee, "employee")
         return(
             <Fragment>
             <CssBaseline />
