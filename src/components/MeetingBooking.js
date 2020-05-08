@@ -21,6 +21,7 @@ import {timeSlots, apiKey, clientId} from '../constants';
 import moment from 'moment';
 import { connect } from "react-redux";
 import {getObject, removeObject} from '../utils';
+import SnackBar from './SnackBar';
 
 const classes = (theme) => ({
     title:{
@@ -146,7 +147,7 @@ class Booking extends Component{
     }
 
     createBooking = (e) => {
-        const { employee={} } = this.state;
+        const { employee={},open=false } = this.state;
         const { date="", slot="", name="", room="", description="" } = employee;
         const startDateTime = moment(moment(date).format('MM/DD/YYYY') + " " +  slot, 'MM/DD/YYYY hh:mm A').format();
         
@@ -186,9 +187,15 @@ class Booking extends Component{
         });
           
         request.execute(function(event) {
-            console.log('Event created: ',  event);
+           return <SnackBar open={open} message={"Event created successfully"} handleClose={this.onCloseSnackBar}/>
+            // console.log('Event created: ',  event);
         });
-        //this.handleClientLoad(employee);
+    }
+
+    onCloseSnackBar = () => {
+        this.setState({
+            open:false
+        })
     }
 
     logOut = () => {
