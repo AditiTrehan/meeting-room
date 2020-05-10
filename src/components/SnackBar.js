@@ -11,10 +11,10 @@ export default function SimpleSnackbar(props) {
       <Snackbar
         anchorOrigin={{
           vertical: 'top',
-          horizontal: 'right',
+          horizontal: 'center',
         }}
         open={open}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleClose}
         message={message}
         action={

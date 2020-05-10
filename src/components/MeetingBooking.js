@@ -12,10 +12,12 @@ import {
     MenuItem,
     TextField,
     Button,
-    CircularProgress
+    CircularProgress,
+    Box
 }
 from '@material-ui/core';
 import { DatePicker,MuiPickersUtilsProvider } from "@material-ui/pickers";
+import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
 import PropTypes from "prop-types";
 import MomentUtils from '@date-io/moment';
 import {timeSlots, apiKey, clientId} from '../constants';
@@ -23,6 +25,7 @@ import moment from 'moment';
 import { connect } from "react-redux";
 import {getObject, removeObject} from '../utils';
 import SnackBar from './SnackBar';
+import AttendeeModal from './AttendeeModal';
 
 const classes = (theme) => ({
     title:{
@@ -59,6 +62,15 @@ const classes = (theme) => ({
     },
     bookButton:{
         margin: theme.spacing(3, 0, 2),
+    },
+    attendeeContainer:{
+        width:'100%',
+    },
+    list:{
+        marginTop:theme.spacing(2)
+    },
+    editBtn:{
+        cursor:'pointer'
     }
 })
 
@@ -73,10 +85,13 @@ class Booking extends Component{
                 date:new Date(),
                 slot:'',
                 email:'',
+                attendees:''
             },
             creatingBooking: false,
             message: '',
-            tempName:""
+            tempName:"",
+            openAttendeeModal:false,
+            allAttendees:[]
         }       
     }
 
@@ -146,10 +161,10 @@ class Booking extends Component{
     }
 
     createBooking = (e) => {
-        const { employee={} } = this.state;
+        const { employee={},allAttendees=[] } = this.state;
         this.toggleCreateBookingLoading();
 
-        const { date="", slot="", name="", room="", description="" } = employee;
+        const { date="", slot="", name="", room="", description=""} = employee;
         const startDateTime = moment(moment(date).format('MM/DD/YYYY') + " " +  slot, 'MM/DD/YYYY hh:mm A').format();
         
         let endTimeSlot = slot.split(":");
@@ -170,9 +185,7 @@ class Booking extends Component{
               'dateTime': endDateTime,
               'timeZone': 'Asia/Calcutta'
             },
-            'attendees': [
-              {'email': 'adititrehan61@gmail.com'}
-            ],
+            'attendees': allAttendees,
             'reminders': {
               'useDefault': false,
               'overrides': [
@@ -182,7 +195,6 @@ class Booking extends Component{
             },
             sendNotifications: true
         };
-          
         var request = window.gapi.client.calendar.events.insert({
             'calendarId': 'primary',
             'resource': event
@@ -200,7 +212,6 @@ class Booking extends Component{
                 })
             }
             this.openSnackBar(message);
-            // console.log('Event created: ',  event);
         });
     }
 
@@ -234,9 +245,30 @@ class Booking extends Component{
         }))
     }
 
+    toggleAttendeeModal = () => {
+        this.setState((prevState) => ({
+            openAttendeeModal:!prevState.openAttendeeModal
+        }))
+    }
+
+    onSaveAttendees = () => {
+        const {employee = {}} = this.state;
+        const {attendees} = employee;
+        let attendeeArr =  attendees && attendees.split(',')
+        let allAttendees = attendeeArr && attendeeArr.map((att) => {
+            return {'email' : att}
+        })
+        this.setState({
+            allAttendees 
+        },() => {
+            this.openSnackBar("Attendees saved successfully")
+            this.toggleAttendeeModal();
+        })
+    }
+
     render(){
         const { classes } = this.props;
-        const { employee={}, creatingBooking=false, open=false, message='', tempName } = this.state;
+        const { employee={}, creatingBooking=false, open=false, message='', tempName='', openAttendeeModal=false } = this.state;
         return(
             <Fragment>
             <CssBaseline />
@@ -288,6 +320,22 @@ class Booking extends Component{
                         value={employee.description || ''}
                         onChange={(e)=>this.onChange(e,"description")}
                     />
+                    <div className = {classes.attendeeContainer}>
+                    {employee && employee.attendees ? 
+                        <Box display="flex" flexDirection="row">
+                            <Box>
+                                <Typography component="h4" noWrap  align="left" className={classes.list}>
+                                    Attendees: {employee.attendees || ''}
+                                </Typography>
+                            </Box>
+                            <Box p={2} className={classes.editBtn}>
+                                <EditOutlinedIcon onClick={this.toggleAttendeeModal} />
+                            </Box>
+                        </Box>
+                        :
+                        <Button variant="outlined" color="default" className={classes.list} onClick={this.toggleAttendeeModal}>Add Attendees</Button>
+                    }
+                    </div>
                     <div className={classes.datePicker}>
                         <MuiPickersUtilsProvider utils={MomentUtils} >
                             <DatePicker
@@ -303,7 +351,7 @@ class Booking extends Component{
                         </MuiPickersUtilsProvider>
                     </div>
                     <div>
-                    <Typography component="h5" noWrap  align="center">
+                    <Typography component="h5" noWrap  align="left">
                         Please select your preferred slot
                     </Typography>
                     {
@@ -312,7 +360,7 @@ class Booking extends Component{
                                 <Button key={key} variant={`${slot === employee.slot ? 'contained' : 'outlined'}`} 
                                         className={classes.slot} 
                                         onClick={(e)=>this.onChange(e,"slot",slot)}
-                                        color={`${slot === employee.slot ? 'primary' : ''}`}
+                                        color={`${slot === employee.slot ? 'primary' : 'default'}`}
                                 >
                                     {slot}
                                 </Button>
@@ -320,7 +368,7 @@ class Booking extends Component{
                         })
                     }
                     </div>
-                     <Button
+                    <Button
                         fullWidth
                         variant="contained"
                         color="primary"
@@ -332,6 +380,24 @@ class Booking extends Component{
                 </Paper>
             </main>
             <SnackBar open={open} message={message} handleClose={this.closeSnackBar}/>
+            <AttendeeModal
+                open={openAttendeeModal}
+                handleClose={this.toggleAttendeeModal}
+                modalTitle="Add Attendees"
+                modalText={"Enter email addresses of attendees for your meeting (Address must be comma seperated)"}
+                modalBody={
+                    <TextField
+                        label="Enter Attendees Email"
+                        multiline
+                        rows={4}
+                        variant="outlined"
+                        fullWidth
+                        value={employee.attendees || ''}
+                        onChange={(e)=>this.onChange(e,"attendees")}
+                    />
+                }
+                onSave={this.onSaveAttendees}
+            />
         </Fragment>
         )
     }
