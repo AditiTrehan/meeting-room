@@ -11,6 +11,8 @@ export const timeSlots =[
     "7:00 P.M",
 ]
 
-export const clientId = process.env.CLIENT_ID;
+export const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-export const apiKey = process.env.API_KEY;
+export const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+
+console.log(process.env.REACT_APP_GOOGLE_CLIENT_ID, process.env.REACT_APP_GOOGLE_API_KEY)
