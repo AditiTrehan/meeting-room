@@ -14,5 +14,3 @@ export const timeSlots =[
 export const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 export const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
-
-console.log(process.env.REACT_APP_GOOGLE_CLIENT_ID, process.env.REACT_APP_GOOGLE_API_KEY)
